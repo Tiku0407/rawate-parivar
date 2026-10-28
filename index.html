@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>रावटे परिवार वंश वृक्ष</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f2e8; --card:#fffdf8; --ink:#2b2117; --muted:#7a6a58; --line:#e4d8c4;
+  --bark:#7a4b1e; --bark-2:#9c6a36; --leaf:#3f7a3a; --leaf-bg:#e7f1e2; --warn:#a2462b; --warn-bg:#f8e4dc;
+  --chip:#efe5d3; --focus:#c98a3e;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b1712; --card:#241f18; --ink:#efe6d8; --muted:#b3a38e; --line:#3a3227;
+    --bark:#d9a066; --bark-2:#c08550; --leaf:#8cc583; --leaf-bg:#21321f; --warn:#f0a084; --warn-bg:#3a2219;
+    --chip:#30291f; --focus:#d9a066;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Mukta',system-ui,sans-serif;font-size:17px;line-height:1.5}
+header{padding:28px 16px 18px;text-align:center;border-bottom:1px solid var(--line)}
+header svg{width:44px;height:44px;color:var(--leaf)}
+h1{margin:4px 0 0;font-size:1.7rem;color:var(--bark);font-weight:700}
+header p{margin:2px 0 0;color:var(--muted)}
+nav{display:flex;gap:6px;justify-content:center;padding:12px 16px;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--line)}
+nav button{flex:1;max-width:220px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 10px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
+nav button.on{background:var(--bark);border-color:var(--bark);color:#fff}
+main{max-width:760px;margin:0 auto;padding:16px}
+section.tab{display:none}
+section.tab.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 2px;font-size:1.15rem;color:var(--bark)}
+.card .sub{margin:0 0 12px;color:var(--muted);font-size:.92rem}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid .full{grid-column:1/-1}
+label{display:block;font-size:.88rem;color:var(--muted);margin-bottom:3px}
+label b{color:var(--warn)}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,select:focus{outline:2px solid var(--focus);outline-offset:0;border-color:transparent}
+.row{border:1px dashed var(--line);border-radius:11px;padding:12px;margin-bottom:10px;position:relative}
+.row .lvl{font-weight:700;color:var(--bark-2);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.x{border:none;background:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;padding:0 4px}
+.add{border:1px dashed var(--bark-2);background:none;color:var(--bark);border-radius:9px;padding:8px 12px;font:inherit;font-weight:600;cursor:pointer;width:100%}
+.hint{font-size:.85rem;margin-top:4px;min-height:1px}
+.hint.found{color:var(--leaf)}
+.hint.new{color:var(--muted)}
+.primary{display:block;width:100%;background:var(--leaf);color:#fff;border:none;border-radius:12px;padding:13px;font:inherit;font-size:1.05rem;font-weight:700;cursor:pointer}
+.primary:disabled{opacity:.6;cursor:wait}
+.msg{padding:12px 14px;border-radius:11px;margin:12px 0;display:none}
+.msg.ok{display:block;background:var(--leaf-bg);color:var(--leaf)}
+.msg.err{display:block;background:var(--warn-bg);color:var(--warn)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:1.5rem;color:var(--bark)}
+.stat span{font-size:.85rem;color:var(--muted)}
+.tree ul{list-style:none;margin:0;padding-left:18px;border-left:2px solid var(--line)}
+.tree>ul{padding-left:0;border-left:none}
+.tree li{margin:3px 0}
+.tree summary{cursor:pointer;list-style:none}
+.tree summary::-webkit-details-marker{display:none}
+.node{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:baseline;padding:4px 10px;border-radius:9px;background:var(--chip)}
+.node .nm{font-weight:700}
+.node .meta{font-size:.82rem;color:var(--muted)}
+.node .gen{font-size:.75rem;color:var(--bark-2);font-weight:600}
+.node.f .nm{color:var(--bark-2)}
+.node.hit{outline:2px solid var(--focus)}
+details>summary .node::before{content:'▸';color:var(--muted);margin-right:2px}
+details[open]>summary .node::before{content:'▾'}
+.dead{font-size:.75rem;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 5px}
+.help ol{padding-left:20px;margin:6px 0}
+.help li{margin-bottom:6px}
+.addh{border:1px solid var(--bark-2);background:var(--card);color:var(--bark);border-radius:999px;font:inherit;font-size:.78rem;font-weight:600;padding:0 9px;cursor:pointer}
+.anchor{display:none;background:var(--leaf-bg);color:var(--ink);border:1px solid var(--leaf);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.anchor b{color:var(--leaf)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.acts button,.anchor button{border:1px solid currentColor;background:var(--card);color:var(--leaf);border-radius:9px;padding:7px 12px;font:inherit;font-weight:600;cursor:pointer}
+.qa-back{position:fixed;inset:0;background:rgba(20,14,8,.55);display:none;align-items:flex-end;justify-content:center;z-index:20;padding:16px}
+.qa-back.on{display:flex}
+.qa{background:var(--card);border-radius:16px;padding:18px 16px;width:100%;max-width:460px;max-height:90vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.qa h3{margin:0 0 2px;color:var(--bark);font-size:1.1rem}
+.qa .sub{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+.qa .f{margin-bottom:10px}
+.seg{display:flex;gap:6px}
+.seg label{flex:1;margin:0;text-align:center;border:1px solid var(--line);border-radius:9px;padding:8px 4px;cursor:pointer;color:var(--ink);font-weight:600}
+.seg input{display:none}
+.seg input:checked+span{color:#fff}
+.seg label:has(input:checked){background:var(--bark);border-color:var(--bark);color:#fff}
+.seg label.dis{opacity:.4;pointer-events:none}
+.qa .more{background:none;border:none;color:var(--bark);font:inherit;font-weight:600;padding:0;cursor:pointer;margin-bottom:10px}
+.qa .btns{display:flex;gap:8px;margin-top:6px}
+.qa .btns button{flex:1;border-radius:11px;padding:11px;font:inherit;font-weight:700;cursor:pointer}
+.qa .cancel{background:none;border:1px solid var(--line);color:var(--ink)}
+.qa .ok{background:var(--leaf);border:none;color:#fff}
+.qa .ok:disabled{opacity:.6}
+.qa .err{color:var(--warn);font-size:.9rem;min-height:1.2em;margin:4px 0}
+.qa .link{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:.88rem;background:none;border:none;font:inherit;cursor:pointer;text-decoration:underline;width:100%}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--leaf);color:#fff;padding:10px 16px;border-radius:999px;font-weight:600;z-index:30;display:none;max-width:90vw;text-align:center}
+.setup{background:var(--warn-bg);color:var(--warn);border-radius:11px;padding:12px;margin-bottom:14px;display:none}
+@media (max-width:520px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+    <path d="M24 44V22M24 30l-8-6M24 26l8-6"/><circle cx="24" cy="14" r="10"/><circle cx="12" cy="22" r="6"/><circle cx="36" cy="22" r="6"/>
+  </svg>
+  <h1>रावटे परिवार</h1>
+  <p>वंश वृक्ष — सब मिलकर पूरा करें</p>
+</header>
+
+<nav>
+  <button data-t="form" class="on">जानकारी भरें</button>
+  <button data-t="tree">वंश वृक्ष देखें</button>
+  <button data-t="help">कैसे भरें</button>
+</nav>
+
+<main>
+<div class="setup" id="setup">यह पेज सीधे फाइल के रूप में खुला है, इसलिए Google Sheet से नहीं जुड़ा। कृपया Apps Script के <b>Deploy</b> से मिला वेब-ऐप लिंक (जो <code>/exec</code> पर खत्म होता है) खोलें।</div>
+
+<!-- ============ फॉर्म ============ -->
+<section class="tab on" id="t-form">
+<form id="f" autocomplete="off" novalidate>
+
+  <div class="anchor" id="anchorBox"></div>
+
+  <div class="card" id="cardSelf">
+    <h2>1. मुख्य व्यक्ति</h2>
+    <p class="sub">जिनकी जानकारी भर रहे हैं (अक्सर आप स्वयं)</p>
+    <div class="grid">
+      <div class="full"><label>नाम <b>*</b></label><input name="self.name" list="names" required data-check></div>
+      <div><label>लिंग</label><select name="self.gender"><option>पुरुष</option><option>महिला</option></select></div>
+      <div><label>जन्म वर्ष</label><input name="self.birthYear" inputmode="numeric" maxlength="4" placeholder="जैसे 1985"></div>
+      <div><label id="selfSp">पत्नी का नाम</label><input name="self.spouse"></div>
+      <div><label>वर्तमान गाँव / शहर</label><input name="self.village"></div>
+      <div><label>स्थिति</label><select name="self.status"><option>जीवित</option><option>दिवंगत</option></select></div>
+      <div><label>मोबाइल (वैकल्पिक)</label><input name="self.mobile" inputmode="tel" maxlength="13"></div>
+    </div>
+  </div>
+
+  <div class="card" id="cardAnc">
+    <h2>2. पूर्वज (पिता की ओर से)</h2>
+    <p class="sub">पिता से शुरू करके जितना पीछे तक याद हो। बीच की पीढ़ी खाली न छोड़ें।</p>
+    <div id="anc"></div>
+    <button type="button" class="add" id="addAnc">+ और पुराने पूर्वज जोड़ें</button>
+  </div>
+
+  <div class="card">
+    <h2>3. सगे भाई-बहन</h2>
+    <p class="sub">मुख्य व्यक्ति के भाई-बहन (एक ही पिता की संतान)</p>
+    <div id="sib"></div>
+    <button type="button" class="add" data-add="sib">+ भाई/बहन जोड़ें</button>
+  </div>
+
+  <div class="card">
+    <h2>4. पिता के भाई-बहन</h2>
+    <p class="sub">चाचा, ताऊ (बड़े पिता), बुआ — दादा की संतान</p>
+    <div id="fsib"></div>
+    <button type="button" class="add" data-add="fsib">+ चाचा/ताऊ/बुआ जोड़ें</button>
+  </div>
+
+  <div class="card">
+    <h2>5. संतान</h2>
+    <p class="sub">मुख्य व्यक्ति के बेटे-बेटियाँ</p>
+    <div id="kid"></div>
+    <button type="button" class="add" data-add="kid">+ संतान जोड़ें</button>
+  </div>
+
+  <div class="card">
+    <h2>6. जानकारी भरने वाले</h2>
+    <div class="grid">
+      <div><label>आपका नाम <b>*</b></label><input name="sub.name" required></div>
+      <div><label>आपका मोबाइल</label><input name="sub.mobile" inputmode="tel" maxlength="13"></div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+  <button class="primary" id="go" type="submit">जानकारी जमा करें</button>
+</form>
+</section>
+
+<!-- ============ वृक्ष ============ -->
+<section class="tab" id="t-tree">
+  <div class="stats">
+    <div class="stat"><b id="sCount">–</b><span>सदस्य</span></div>
+    <div class="stat"><b id="sGen">–</b><span>पीढ़ियाँ</span></div>
+    <div class="stat"><b id="sRoot">–</b><span>मूल शाखाएँ</span></div>
+  </div>
+  <div class="card">
+    <input id="q" placeholder="नाम खोजें (हिंदी या अंग्रेज़ी में)">
+    <div class="hint new" id="qInfo"></div>
+  </div>
+  <div class="card tree" id="tree"><p class="sub">लोड हो रहा है…</p></div>
+</section>
+
+<!-- ============ सहायता ============ -->
+<section class="tab help" id="t-help">
+  <div class="card">
+    <h2>भरने का तरीका</h2>
+    <ol>
+      <li>हर व्यक्ति केवल अपनी शाखा भरे: स्वयं, पिता, दादा, परदादा… फिर भाई-बहन, चाचा-बुआ और संतान।</li>
+      <li>नाम हिंदी या अंग्रेज़ी में लिख सकते हैं। "स्व.", "श्री", "जी", "रावटे" लिखने या न लिखने से फर्क नहीं पड़ता।</li>
+      <li>अगर कोई नाम पहले से वृक्ष में है, तो नीचे हरे रंग में दिखेगा। उसी वर्तनी को चुनें।</li>
+      <li>एक ही व्यक्ति को कई लोग भरें तो चिंता न करें: एक ही नाम + एक ही पिता होने पर वह एक ही व्यक्ति माना जाएगा।</li>
+      <li>जन्म वर्ष और पति/पत्नी का नाम लिखने से मिलान ज़्यादा सही होता है। लिंग "महिला" चुनने पर पति (दामाद, मामा/फूफा) का नाम पूछा जाएगा।</li>
+      <li>बाद में एक नाम जोड़ना हो: "वंश वृक्ष देखें" में पिता या भाई/बहन के आगे <b>+ नाम जोड़ें</b> दबाएँ, नाम लिखें, रिश्ता चुनें और "जोड़ें" दबाएँ। बस इतना।</li>
+      <li>बेटियों की संतान (नाती-नातिन) इस वृक्ष में न जोड़ें, वे उनके पति के वंश में आते हैं।</li>
+    </ol>
+  </div>
+</section>
+</main>
+
+<!-- एक नाम जल्दी जोड़ने का डिब्बा -->
+<div class="qa-back" id="qaBack">
+  <form class="qa" id="qa" autocomplete="off" novalidate>
+    <h3 id="qaTitle">नया नाम जोड़ें</h3>
+    <p class="sub" id="qaSub"></p>
+    <div class="f"><label>नाम <b style="color:var(--warn)">*</b></label><input id="qaName" list="names"></div>
+    <div class="f"><label>रिश्ता</label>
+      <div class="seg" id="qaRel">
+        <label id="relKid"><input type="radio" name="qrel" value="kid" checked><span>संतान</span></label>
+        <label id="relSib"><input type="radio" name="qrel" value="sib"><span>भाई / बहन</span></label>
+      </div>
+    </div>
+    <div class="f"><label>लिंग</label>
+      <div class="seg">
+        <label><input type="radio" name="qgen" value="पुरुष" checked><span>पुरुष</span></label>
+        <label><input type="radio" name="qgen" value="महिला"><span>महिला</span></label>
+      </div>
+    </div>
+    <button type="button" class="more" id="qaMoreBtn">+ जन्म वर्ष, पति/पत्नी (वैकल्पिक)</button>
+    <div id="qaMore" style="display:none">
+      <div class="f"><label>जन्म वर्ष</label><input id="qaYear" inputmode="numeric" maxlength="4"></div>
+      <div class="f"><label id="qaSpL">पत्नी का नाम</label><input id="qaSpouse"></div>
+      <div class="f"><label>स्थिति</label><select id="qaStatus"><option>जीवित</option><option>दिवंगत</option></select></div>
+    </div>
+    <div class="f" id="qaSubBox"><label>आपका नाम (जानकारी देने वाले)</label><input id="qaSubName"></div>
+    <div class="err" id="qaErr"></div>
+    <div class="btns"><button type="button" class="cancel" id="qaCancel">रद्द करें</button><button type="submit" class="ok" id="qaOk">जोड़ें</button></div>
+    <button type="button" class="link" id="qaMany">एक साथ कई नाम जोड़ने हैं? पूरा फॉर्म खोलें</button>
+  </form>
+</div>
+<div class="toast" id="toast"></div>
+
+<datalist id="names"></datalist>
+
+<script>
+/* वेब-ऐप लिंक यहाँ डालें (Apps Script → Deploy → Web app URL).
+   Apps Script से ही खोलने पर इसकी ज़रूरत नहीं। */
+const SCRIPT_URL = 'PASTE_WEB_APP_URL_HERE';
+
+const ANC_LABELS = ['पिता','दादा','परदादा','परदादा के पिता','उनके पिता (5वीं पीढ़ी)','उनके पिता (6वीं पीढ़ी)','उनके पिता (7वीं पीढ़ी)','उनके पिता (8वीं पीढ़ी)'];
+const ANC_SPOUSE = ['माता','दादी','परदादी','उनकी पत्नी','उनकी पत्नी','उनकी पत्नी','उनकी पत्नी','उनकी पत्नी'];
+let MEMBERS = [], BY_ID = {}, BY_KEY = {}, ANCHOR = '';
+
+/* लिंग के अनुसार पति/पत्नी वाले खाने का नाम */
+const SP = {
+  self: ['पत्नी का नाम', 'पति का नाम'],
+  sib:  ['पत्नी का नाम', 'पति (दामाद) का नाम'],
+  fsib: ['पत्नी का नाम', 'पति (मामा/फूफा) का नाम'],
+  kid:  ['पत्नी का नाम', 'पति (दामाद) का नाम']
+};
+const spLabel = (kind, g) => SP[kind][g === 'महिला' ? 1 : 0];
+
+/* ---------- नाम-कुंजी (Code.gs जैसी ही) ---------- */
+const SURNAMES=['रावटे','राउटे','रावते','रावटें','rawate','rawte','ravate','raute','rawtey','rawatey'];
+const TITLES=['स्व','स्वर्गीय','श्री','श्रीमती','श्रीमान','कु','कुमारी','जी','डॉ','डा','बाई','ठाकुर','late','lt','shri','sri','shree','smt','mr','mrs','ms','ku','kumari','ji','dr','bai','thakur','thakure'];
+const DV_VOWELS={'अ':'a','आ':'a','इ':'i','ई':'i','उ':'u','ऊ':'u','ऋ':'ri','ए':'e','ऐ':'ai','ओ':'o','औ':'au','ऑ':'o','ऍ':'e'};
+const DV_MATRAS={'ा':'a','ि':'i','ी':'i','ु':'u','ू':'u','ृ':'ri','े':'e','ै':'ai','ो':'o','ौ':'au','ॉ':'o','ॅ':'e','ं':'n','ँ':'n','ः':'h','्':''};
+const DV_CONS={'क':'k','ख':'kh','ग':'g','घ':'gh','ङ':'n','च':'ch','छ':'chh','ज':'j','झ':'jh','ञ':'n','ट':'t','ठ':'th','ड':'d','ढ':'dh','ण':'n','त':'t','थ':'th','द':'d','ध':'dh','न':'n','प':'p','फ':'ph','ब':'b','भ':'bh','म':'m','य':'y','र':'r','ल':'l','व':'v','श':'sh','ष':'sh','स':'s','ह':'h','ळ':'l'};
+const DV_NUKTA={'ड':'r','ढ':'rh','फ':'f','ज':'j','क':'k','ख':'kh','ग':'g'};
+function translit_(s){let out='';for(let i=0;i<s.length;i++){const ch=s[i],nx=s[i+1];if(DV_CONS[ch]!==undefined){if(nx==='़'){out+=DV_NUKTA[ch]||DV_CONS[ch];i++;}else out+=DV_CONS[ch];const after=s[i+1];if(!(after&&DV_MATRAS[after]!==undefined))out+='a';}else if(DV_VOWELS[ch]!==undefined)out+=DV_VOWELS[ch];else if(DV_MATRAS[ch]!==undefined)out+=DV_MATRAS[ch];else if(ch==='़'){}else out+=ch;}return out;}
+function nameKey(s){let t=String(s||'').normalize('NFD').toLowerCase().replace(/[.\-_,()'"/]/g,' ');const drop={};TITLES.concat(SURNAMES).forEach(w=>{drop[w.normalize('NFD')]=1;});t=t.split(/\s+/).filter(w=>w&&!drop[w]).join('');t=translit_(t);return t.replace(/[^a-z]/g,'').replace(/ph/g,'f').replace(/w/g,'v').replace(/z/g,'j').replace(/q/g,'k').replace(/x/g,'ks').replace(/ksh/g,'ks').replace(/chh/g,'c').replace(/ch/g,'c').replace(/sh/g,'s').replace(/([kgcjtdpbr])h/g,'$1').replace(/eo/g,'ev').replace(/ee/g,'i').replace(/oo/g,'u').replace(/au|ou/g,'o').replace(/ai/g,'e').replace(/a/g,'').replace(/(.)\1+/g,'$1');}
+
+/* ---------- सर्वर से बात ---------- */
+const IN_GAS = typeof google !== 'undefined' && google.script && google.script.run;
+function api(action, payload){
+  if (IN_GAS) return new Promise((res, rej) => {
+    const r = google.script.run.withSuccessHandler(res).withFailureHandler(rej);
+    action === 'list' ? r.apiList() : r.apiSubmit(payload);
+  });
+  if (!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE') === 0) return Promise.reject(new Error('SETUP'));
+  if (action === 'list') return fetch(SCRIPT_URL + '?action=list').then(r => r.json());
+  return fetch(SCRIPT_URL, {method:'POST', body: JSON.stringify(payload)}).then(r => r.json());
+}
+
+/* ---------- टैब ---------- */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('section.tab').forEach(s => s.classList.toggle('on', s.id === 't-' + b.dataset.t));
+  if (b.dataset.t === 'tree') renderTree();
+});
+
+/* ---------- फॉर्म की पंक्तियाँ ---------- */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function ancRow(i){
+  const d = document.createElement('div');
+  d.className = 'row'; d.dataset.kind = 'anc';
+  d.innerHTML = `<div class="lvl"><span>${ANC_LABELS[i] || 'पूर्वज'}${i === 0 ? ' <b style="color:var(--warn)">*</b>' : ''}</span>${i > 2 ? '<button type="button" class="x" title="हटाएँ">×</button>' : ''}</div>
+  <div class="grid">
+    <div class="full"><label>नाम</label><input data-f="name" list="names" data-check></div>
+    <div><label>${ANC_SPOUSE[i] || 'पत्नी'} का नाम</label><input data-f="spouse"></div>
+    <div><label>जन्म वर्ष (अनुमानित भी)</label><input data-f="birthYear" inputmode="numeric" maxlength="4"></div>
+    <div><label>स्थिति</label><select data-f="status"><option>पता नहीं</option><option>जीवित</option><option>दिवंगत</option></select></div>
+    <div><label>गाँव</label><input data-f="village"></div>
+  </div>`;
+  return d;
+}
+function personRow(kind){
+  const d = document.createElement('div');
+  d.className = 'row'; d.dataset.kind = kind;
+  d.innerHTML = `<div class="lvl"><span></span><button type="button" class="x" title="हटाएँ">×</button></div>
+  <div class="grid">
+    <div class="full"><label>नाम</label><input data-f="name" list="names" data-check></div>
+    <div><label>लिंग</label><select data-f="gender"><option>पुरुष</option><option>महिला</option></select></div>
+    <div><label>जन्म वर्ष</label><input data-f="birthYear" inputmode="numeric" maxlength="4"></div>
+    <div><label class="splabel">${spLabel(kind, 'पुरुष')}</label><input data-f="spouse"></div>
+    <div><label>स्थिति</label><select data-f="status"><option>जीवित</option><option>दिवंगत</option><option>पता नहीं</option></select></div>
+  </div>`;
+  return d;
+}
+function relabel(){
+  ['sib','fsib','kid'].forEach(k => document.querySelectorAll('#' + k + ' .row').forEach((r, i) => {
+    r.querySelector('.lvl span').textContent = ({sib:'भाई/बहन', fsib:'चाचा/ताऊ/बुआ', kid:'संतान'})[k] + ' ' + (i + 1);
+  }));
+  document.querySelectorAll('#anc .row').forEach((r, i) => {
+    const sp = r.querySelector('.lvl span'); sp.innerHTML = (ANC_LABELS[i] || 'पूर्वज') + (i === 0 ? ' <b style="color:var(--warn)">*</b>' : '');
+  });
+}
+function initForm(){
+  const anc = document.getElementById('anc'); anc.innerHTML = '';
+  for (let i = 0; i < 3; i++) anc.appendChild(ancRow(i));
+  ['sib','fsib','kid'].forEach(k => document.getElementById(k).innerHTML = '');
+}
+document.getElementById('addAnc').onclick = () => {
+  const anc = document.getElementById('anc');
+  if (anc.children.length >= ANC_LABELS.length) return;
+  anc.appendChild(ancRow(anc.children.length));
+};
+document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => {
+  document.getElementById(b.dataset.add).appendChild(personRow(b.dataset.add)); relabel();
+});
+document.getElementById('f').addEventListener('click', e => {
+  if (e.target.classList.contains('x')) { e.target.closest('.row').remove(); relabel(); }
+});
+
+/* ---------- पहले से मौजूद नाम का संकेत ---------- */
+document.getElementById('f').addEventListener('change', e => {
+  const inp = e.target;
+  if (inp.name === 'self.gender') { document.getElementById('selfSp').textContent = spLabel('self', inp.value); return; }
+  if (inp.matches('select[data-f="gender"]')) {
+    const row = inp.closest('.row'), l = row && row.querySelector('.splabel');
+    if (l) l.textContent = spLabel(row.dataset.kind, inp.value);
+    return;
+  }
+  if (!inp.matches('[data-check]')) return;
+  let h = inp.parentNode.querySelector('.hint');
+  if (!h) { h = document.createElement('div'); h.className = 'hint'; inp.parentNode.appendChild(h); }
+  const v = inp.value.trim();
+  if (!v || !MEMBERS.length) { h.textContent = ''; return; }
+  const hits = BY_KEY[nameKey(v)] || [];
+  if (hits.length) {
+    h.className = 'hint found';
+    h.textContent = 'वृक्ष में पहले से: ' + hits.slice(0, 3).map(m => m.name + (m.parentId && BY_ID[m.parentId] ? ' (पिता: ' + BY_ID[m.parentId].name + ')' : '') + (m.birthYear ? ', ' + m.birthYear : '')).join(' · ');
+  } else { h.className = 'hint new'; h.textContent = 'नया नाम — वृक्ष में जोड़ा जाएगा'; }
+});
+
+/* ---------- जमा करना ---------- */
+function readRows(id){
+  return [...document.querySelectorAll('#' + id + ' .row')].map(r => {
+    const o = {}; r.querySelectorAll('[data-f]').forEach(i => o[i.dataset.f] = i.value.trim()); return o;
+  }).filter(o => o.name);
+}
+document.getElementById('f').addEventListener('submit', e => {
+  e.preventDefault();
+  const fd = n => (document.querySelector('[name="' + n + '"]') || {}).value?.trim() || '';
+  const msg = document.getElementById('msg');
+  const show = (cls, t) => { msg.className = 'msg ' + cls; msg.textContent = t; msg.scrollIntoView({behavior:'smooth', block:'center'}); };
+
+  const sib = readRows('sib'), fsib = readRows('fsib'), kid = readRows('kid');
+  if (!fd('sub.name')) return show('err', 'जानकारी भरने वाले का नाम भरें।');
+  let payload;
+
+  if (ANCHOR) {
+    // पहले से मौजूद व्यक्ति के परिवार में जोड़ना
+    const a = BY_ID[ANCHOR], f = a && BY_ID[a.parentId], gf = f && BY_ID[f.parentId];
+    if (!a) return show('err', 'चुना गया सदस्य नहीं मिला। पेज रीफ्रेश करें।');
+    if (!sib.length && !fsib.length && !kid.length) return show('err', 'कम से कम एक नाम जोड़ें।');
+    if (sib.length && !f) return show('err', a.name + ' के पिता वृक्ष में दर्ज नहीं हैं, इसलिए भाई-बहन नहीं जुड़ सकते।');
+    if (fsib.length && !gf) return show('err', a.name + ' के दादा वृक्ष में दर्ज नहीं हैं, इसलिए चाचा/बुआ नहीं जुड़ सकते।');
+    payload = { anchorId: ANCHOR, self: { name: a.name, gender: a.gender }, ancestors: [], siblings: sib, fatherSiblings: fsib, children: kid };
+  } else {
+    // पूर्वज: बीच में खाली हुआ तो वहीं रुकें
+    const ancAll = [...document.querySelectorAll('#anc .row')].map(r => { const o = {}; r.querySelectorAll('[data-f]').forEach(i => o[i.dataset.f] = i.value.trim()); return o; });
+    const ancestors = [];
+    for (const a of ancAll) { if (!a.name) break; ancestors.push(a); }
+    const gap = ancAll.slice(ancestors.length).some(a => a.name);
+    if (!fd('self.name')) return show('err', 'मुख्य व्यक्ति का नाम भरें।');
+    if (!ancestors.length) return show('err', 'पिता का नाम भरना आवश्यक है।');
+    if (gap) return show('err', 'पूर्वजों में बीच की पीढ़ी खाली है। ऊपर की पीढ़ी का नाम तभी भरें जब नीचे वाली भरी हो।');
+    if (fsib.length && ancestors.length < 2) return show('err', 'चाचा/बुआ जोड़ने के लिए दादा का नाम भी भरें।');
+    payload = {
+      self: { name: fd('self.name'), gender: fd('self.gender'), birthYear: fd('self.birthYear'), spouse: fd('self.spouse'),
+              village: fd('self.village'), status: fd('self.status'), mobile: fd('self.mobile') },
+      ancestors, siblings: sib, fatherSiblings: fsib, children: kid
+    };
+  }
+  payload.submitter = { name: fd('sub.name'), mobile: fd('sub.mobile') };
+
+  const go = document.getElementById('go');
+  go.disabled = true; go.textContent = 'जमा हो रहा है…';
+  api('submit', payload).then(r => {
+    if (!r || !r.ok) throw new Error((r && r.error) || 'जमा नहीं हो सका');
+    try { localStorage.setItem('vv_sub', JSON.stringify(payload.submitter)); } catch (e) {}
+    const selfName = payload.self.name;
+    msg.className = 'msg ok';
+    msg.innerHTML = 'धन्यवाद! ' + r.created + ' नए सदस्य जुड़े, ' + r.matched + ' पहले से मौजूद सदस्यों से मिलाए गए।' +
+      (r.notes && r.notes.length ? ' ' + esc(r.notes.join(' ')) : '') +
+      `<div class="acts"><button type="button" data-act="more">${esc(selfName)} के परिवार में और नाम जोड़ें</button>` +
+      '<button type="button" data-act="new">नया फॉर्म भरें</button><button type="button" data-act="tree">वृक्ष देखें</button></div>';
+    msg.dataset.self = r.selfId;
+    clearRows();
+    if (ANCHOR) anchorMode(ANCHOR, true); else { document.getElementById('f').reset(); initForm(); fillSubmitter(); }
+    msg.scrollIntoView({behavior:'smooth', block:'center'});
+    load();
+  }).catch(err => {
+    show('err', err.message === 'SETUP' ? 'पेज अभी Google Sheet से जुड़ा नहीं है।' : 'त्रुटि: ' + err.message + '। इंटरनेट जाँचकर दोबारा कोशिश करें।');
+  }).finally(() => { go.disabled = false; go.textContent = 'जानकारी जमा करें'; });
+});
+
+/* ---------- दोबारा भरना ---------- */
+function clearRows(){ ['sib','fsib','kid'].forEach(k => document.getElementById(k).innerHTML = ''); }
+function hideMsg(){ const m = document.getElementById('msg'); m.className = 'msg'; m.innerHTML = ''; }
+function anchorMode(id, keepMsg){
+  const a = BY_ID[id];
+  if (!a) return;
+  ANCHOR = id;
+  if (!keepMsg) hideMsg();
+  clearRows();
+  const f = BY_ID[a.parentId], gf = f && BY_ID[f.parentId];
+  const line = [f ? 'पिता: ' + f.name : '', gf ? 'दादा: ' + gf.name : ''].filter(Boolean).join(', ');
+  const box = document.getElementById('anchorBox');
+  box.innerHTML = `आप <b>${esc(a.name)}</b>${line ? ' (' + esc(line) + ')' : ''} के परिवार में नाम जोड़ रहे हैं। नीचे इनकी संतान, भाई-बहन या चाचा/बुआ जोड़ें।` +
+    '<div class="acts"><button type="button" data-act="new">सामान्य फॉर्म पर लौटें</button></div>';
+  box.style.display = 'block';
+  document.getElementById('cardSelf').style.display = 'none';
+  document.getElementById('cardAnc').style.display = 'none';
+  document.querySelector('nav button[data-t="form"]').click();
+  if (!keepMsg) box.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function normalMode(){
+  ANCHOR = '';
+  hideMsg();
+  document.getElementById('anchorBox').style.display = 'none';
+  document.getElementById('cardSelf').style.display = '';
+  document.getElementById('cardAnc').style.display = '';
+  document.getElementById('f').reset(); initForm(); fillSubmitter();
+  document.getElementById('selfSp').textContent = spLabel('self', 'पुरुष');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+document.getElementById('t-form').addEventListener('click', e => {
+  const act = e.target.dataset && e.target.dataset.act;
+  if (!act) return;
+  if (act === 'new') normalMode();
+  else if (act === 'tree') document.querySelector('nav button[data-t="tree"]').click();
+  else if (act === 'more') {
+    const id = document.getElementById('msg').dataset.self;
+    const go = () => BY_ID[id] ? anchorMode(id) : null;
+    BY_ID[id] ? go() : load().then(go);
+  }
+});
+function fillSubmitter(){
+  try { const s = JSON.parse(localStorage.getItem('vv_sub') || 'null'); if (s) {
+    document.querySelector('[name="sub.name"]').value = s.name || ''; document.querySelector('[name="sub.mobile"]').value = s.mobile || ''; } } catch (e) {}
+}
+
+/* ---------- वृक्ष ---------- */
+function load(){
+  return api('list').then(r => {
+    MEMBERS = (r && r.members) || [];
+    BY_ID = {}; BY_KEY = {};
+    MEMBERS.forEach(m => { BY_ID[m.id] = m; (BY_KEY[m.key || nameKey(m.name)] ||= []).push(m); });
+    const seen = {};
+    document.getElementById('names').innerHTML = MEMBERS.filter(m => !seen[m.name] && (seen[m.name] = 1)).map(m => `<option value="${esc(m.name)}">`).join('');
+    if (document.getElementById('t-tree').classList.contains('on')) renderTree();
+  }).catch(err => {
+    if (err.message === 'SETUP') document.getElementById('setup').style.display = 'block';
+    document.getElementById('tree').innerHTML = '<p class="sub">वृक्ष लोड नहीं हो सका।</p>';
+  });
+}
+function renderTree(){
+  const box = document.getElementById('tree');
+  if (!MEMBERS.length) { box.innerHTML = '<p class="sub">अभी कोई सदस्य दर्ज नहीं है।</p>'; return; }
+  const kids = {};
+  MEMBERS.forEach(m => { const p = m.parentId && BY_ID[m.parentId] ? m.parentId : ''; (kids[p] ||= []).push(m); });
+  const sort = a => a.sort((x, y) => (parseInt(x.birthYear) || 9999) - (parseInt(y.birthYear) || 9999) || x.name.localeCompare(y.name, 'hi'));
+  let maxGen = 0;
+  const desc = {};
+  const countDesc = id => desc[id] ??= (kids[id] || []).reduce((s, c) => s + 1 + countDesc(c.id), 0);
+  const node = (m, g) => {
+    maxGen = Math.max(maxGen, g);
+    const ch = sort(kids[m.id] || []);
+    const fem = m.gender === 'महिला';
+    const meta = [m.spouse ? (fem ? 'पति: ' : 'पत्नी: ') + m.spouse : '', m.birthYear || '', m.village || ''].filter(Boolean).join(' · ');
+    const label = `<span class="node ${fem ? 'f' : ''}" data-id="${m.id}"><span class="gen">पीढ़ी ${g}</span><span class="nm">${esc(m.name)}</span>${m.status === 'दिवंगत' ? '<span class="dead">दिवंगत</span>' : ''}${meta ? `<span class="meta">${esc(meta)}</span>` : ''}${ch.length ? `<span class="meta">(${countDesc(m.id)} वंशज)</span>` : ''}<button type="button" class="addh" data-add-id="${m.id}">+ नाम जोड़ें</button></span>`;
+    return ch.length ? `<li><details open><summary>${label}</summary><ul>${ch.map(c => node(c, g + 1)).join('')}</ul></details></li>` : `<li>${label}</li>`;
+  };
+  const roots = sort(kids[''] || []);
+  box.innerHTML = '<ul>' + roots.map(r => node(r, 1)).join('') + '</ul>';
+  document.getElementById('sCount').textContent = MEMBERS.length;
+  document.getElementById('sGen').textContent = maxGen;
+  document.getElementById('sRoot').textContent = roots.length;
+  search();
+}
+function search(){
+  const q = document.getElementById('q').value.trim(), info = document.getElementById('qInfo');
+  document.querySelectorAll('.node.hit').forEach(n => n.classList.remove('hit'));
+  if (!q) { info.textContent = ''; return; }
+  const k = nameKey(q), ql = q.toLowerCase();
+  const hits = MEMBERS.filter(m => (k && (m.key || nameKey(m.name)).includes(k)) || m.name.toLowerCase().includes(ql));
+  hits.forEach(m => { const el = document.querySelector(`.node[data-id="${m.id}"]`); if (!el) return; el.classList.add('hit'); let d = el.closest('details'); while (d) { d.open = true; d = d.parentElement.closest('details'); } });
+  info.textContent = hits.length ? hits.length + ' मिलान मिले' : 'कोई मिलान नहीं';
+  const first = document.querySelector('.node.hit'); if (first) first.scrollIntoView({behavior:'smooth', block:'center'});
+}
+document.getElementById('tree').addEventListener('click', e => {
+  const b = e.target.closest('[data-add-id]');
+  if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  openQuick(b.dataset.addId);
+});
+
+/* ---------- एक नाम जल्दी जोड़ना ---------- */
+let QA_ID = '', LAST_ADDED = '';
+const $ = id => document.getElementById(id);
+const qVal = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
+function savedSub(){ try { return JSON.parse(localStorage.getItem('vv_sub') || 'null') || {}; } catch (e) { return {}; } }
+function updQaSp(){ $('qaSpL').textContent = spLabel(qVal('qrel') === 'sib' ? 'sib' : 'kid', qVal('qgen')); }
+function openQuick(id){
+  const m = BY_ID[id]; if (!m) return;
+  QA_ID = id;
+  const fem = m.gender === 'महिला', f = BY_ID[m.parentId];
+  $('qa').reset(); $('qaMore').style.display = 'none'; $('qaMoreBtn').style.display = ''; $('qaErr').textContent = '';
+  $('qaTitle').textContent = m.name + ' के परिवार में नया नाम';
+  $('qaSub').textContent = f ? 'पिता: ' + f.name : '';
+  // महिला की संतान इस वंश में नहीं; जिसके पिता दर्ज नहीं, उसके भाई-बहन नहीं जुड़ सकते
+  $('relKid').classList.toggle('dis', fem);
+  $('relSib').classList.toggle('dis', !f);
+  if (fem) document.querySelector('input[name="qrel"][value="sib"]').checked = true;
+  if (fem && !f) { toast('इनके पिता वृक्ष में दर्ज नहीं हैं, इसलिए यहाँ नाम नहीं जुड़ सकता।'); return; }
+  const s = savedSub();
+  $('qaSubName').value = s.name || '';
+  $('qaSubBox').style.display = s.name ? 'none' : '';
+  updQaSp();
+  $('qaBack').classList.add('on');
+  setTimeout(() => $('qaName').focus(), 50);
+}
+function closeQuick(){ $('qaBack').classList.remove('on'); QA_ID = ''; }
+function toast(t){ const el = $('toast'); el.textContent = t; el.style.display = 'block'; clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 3500); }
+$('qa').addEventListener('change', e => { if (e.target.name === 'qrel' || e.target.name === 'qgen') updQaSp(); });
+$('qaMoreBtn').onclick = () => { $('qaMore').style.display = ''; $('qaMoreBtn').style.display = 'none'; };
+$('qaCancel').onclick = closeQuick;
+$('qaBack').addEventListener('click', e => { if (e.target === $('qaBack')) closeQuick(); });
+$('qaMany').onclick = () => { const id = QA_ID; closeQuick(); anchorMode(id); };
+$('qaName').addEventListener('input', () => {
+  const v = $('qaName').value.trim(), m = BY_ID[QA_ID];
+  if (!v || !m) { $('qaErr').textContent = ''; return; }
+  const k = nameKey(v), rel = qVal('qrel');
+  const pid = rel === 'sib' ? m.parentId : m.id;
+  const dup = MEMBERS.find(x => x.parentId === pid && (x.key || nameKey(x.name)) === k);
+  $('qaErr').textContent = dup ? '"' + dup.name + '" पहले से इसी परिवार में दर्ज हैं।' : '';
+});
+$('qa').addEventListener('submit', e => {
+  e.preventDefault();
+  const m = BY_ID[QA_ID], name = $('qaName').value.trim();
+  if (!name) { $('qaErr').textContent = 'नाम लिखें।'; $('qaName').focus(); return; }
+  const rel = qVal('qrel');
+  const row = { name, gender: qVal('qgen'), birthYear: $('qaYear').value.trim(), spouse: $('qaSpouse').value.trim(), status: $('qaStatus').value };
+  const sub = { name: $('qaSubName').value.trim() || savedSub().name || '', mobile: savedSub().mobile || '' };
+  const payload = { anchorId: QA_ID, self: { name: m.name, gender: m.gender }, ancestors: [],
+    siblings: rel === 'sib' ? [row] : [], fatherSiblings: [], children: rel === 'kid' ? [row] : [], submitter: sub };
+  const ok = $('qaOk'); ok.disabled = true; ok.textContent = 'जुड़ रहा है…';
+  api('submit', payload).then(r => {
+    if (!r || !r.ok) throw new Error((r && r.error) || 'नहीं जुड़ सका');
+    if (sub.name) { try { localStorage.setItem('vv_sub', JSON.stringify(sub)); } catch (e) {} }
+    closeQuick();
+    toast(r.created ? '"' + name + '" वृक्ष में जुड़ गए' : '"' + name + '" पहले से दर्ज थे, जानकारी अपडेट हो गई');
+    LAST_ADDED = name;
+    return load().then(() => { $('q').value = LAST_ADDED; search(); });
+  }).catch(err => {
+    $('qaErr').textContent = err.message === 'SETUP' ? 'पेज अभी Google Sheet से जुड़ा नहीं है।' : 'त्रुटि: ' + err.message;
+  }).finally(() => { ok.disabled = false; ok.textContent = 'जोड़ें'; });
+});
+let qt; document.getElementById('q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(search, 300); });
+
+initForm(); fillSubmitter(); load();
+</script>
+</body>
+</html>
