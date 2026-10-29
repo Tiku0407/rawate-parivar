@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>रावटे परिवार सूची</title>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f7f2e8; --card:#fffdf8; --ink:#2b2117; --muted:#7a6a58; --line:#e4d8c4; --accent:#7a4b1e;
+          --accent2:#9c6a36; --leaf:#3f7a3a; --focus:#c98a3e; --chip:#efe5d3; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1b1712; --card:#241f18; --ink:#efe6d8; --muted:#b3a38e; --line:#3a3227; --accent:#d9a066;
+            --accent2:#c08550; --leaf:#8cc583; --focus:#d9a066; --chip:#30291f; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Mukta", system-ui, sans-serif; font-size: 17px; line-height: 1.45;
+         background: var(--bg); color: var(--ink); }
+  header { text-align: center; padding: 24px 16px 14px; border-bottom: 1px solid var(--line); }
+  h1 { margin: 0; color: var(--accent); font-size: 1.6rem; }
+  header p { margin: 2px 0 0; color: var(--muted); }
+  main { max-width: 680px; margin: 0 auto; padding: 16px; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .bar input { flex: 1; min-width: 160px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px;
+               background: var(--card); color: var(--ink); font: inherit; }
+  .bar button { font: inherit; font-weight: 600; border: 1px solid var(--accent); color: var(--accent);
+                background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .info { color: var(--muted); font-size: .9rem; margin: -4px 0 10px; min-height: 1.2em; }
+  ul.lvl { list-style: none; margin: 0; padding: 0; }
+  ul.lvl ul.lvl { padding-left: 10px; border-left: 2px solid var(--line); margin-left: 10px; }
+  .item { margin: 6px 0; }
+  .row { width: 100%; display: flex; align-items: center; gap: 8px; text-align: left; font: inherit; color: var(--ink);
+         background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; cursor: pointer; }
+  .row.leaf { cursor: default; }
+  .row:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .row.hit { border-color: var(--focus); box-shadow: 0 0 0 2px var(--focus) inset; }
+  .arrow { width: 1em; flex: none; color: var(--accent); }
+  .who { flex: 1; min-width: 0; }
+  .nm { font-weight: 700; }
+  .f .nm { color: var(--accent2); }
+  .meta { display: block; font-size: .85rem; color: var(--muted); }
+  .gen { font-size: .72rem; font-weight: 700; color: var(--accent2); background: var(--chip); border-radius: 6px; padding: 0 6px; }
+  .dead { font-size: .72rem; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; margin-left: 4px; }
+  .count { flex: none; font-size: .85rem; color: var(--muted); }
+  .kids { display: none; }
+  .item.open > .kids { display: block; }
+  .msg { text-align: center; color: var(--muted); padding: 30px 10px; }
+  .add { display: block; text-align: center; margin: 18px 0 6px; color: var(--leaf); font-weight: 700; }
+</style>
+</head>
+<body>
+<header>
+  <h1>रावटे परिवार</h1>
+  <p>नाम पर क्लिक करें — उनकी संतान खुलेगी</p>
+</header>
+<main>
+  <div class="bar">
+    <input id="q" placeholder="नाम खोजें (हिंदी या अंग्रेज़ी)" autocomplete="off">
+    <button id="toggleAll" type="button">सब खोलें</button>
+  </div>
+  <div class="info" id="info"></div>
+  <div id="list"><p class="msg">परिवार की सूची लोड हो रही है…</p></div>
+  <a class="add" href="./">+ नया नाम जोड़ें / जानकारी भरें</a>
+</main>
+
+<script>
+/* 1. डेटा का स्रोत — आपकी Google Sheet (वंश वृक्ष वेब-ऐप) */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzac7d6N9GOs4nUf74pzdeKlvt0DlW1-AH0I-djK5Z7SCNa9WEvG8jLo4xLzRU6uQPkSA/exec';
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let MEMBERS = [], KIDS = {};
+
+/* नाम-मिलान (हिंदी ↔ अंग्रेज़ी खोज के लिए) */
+const DV = {'अ':'a','आ':'a','इ':'i','ई':'i','उ':'u','ऊ':'u','ए':'e','ऐ':'ai','ओ':'o','औ':'au','ा':'a','ि':'i','ी':'i','ु':'u','ू':'u','े':'e','ै':'ai','ो':'o','ौ':'au','ं':'n','ँ':'n','्':'',
+  'क':'k','ख':'kh','ग':'g','घ':'gh','च':'ch','छ':'chh','ज':'j','झ':'jh','ट':'t','ठ':'th','ड':'d','ढ':'dh','ण':'n','त':'t','थ':'th','द':'d','ध':'dh','न':'n',
+  'प':'p','फ':'ph','ब':'b','भ':'bh','म':'m','य':'y','र':'r','ल':'l','व':'v','श':'sh','ष':'sh','स':'s','ह':'h'};
+function key(s){
+  s = String(s || '').toLowerCase().replace(/श्रीमती|श्री|स्व\.?|रावटे|rawate|shri|late/g, '');
+  let o = ''; for (const ch of s) o += DV[ch] !== undefined ? DV[ch] : ch;
+  return o.replace(/[^a-z]/g, '').replace(/w/g,'v').replace(/([kgcjtdpbs])h/g,'$1').replace(/ee/g,'i').replace(/oo/g,'u').replace(/a/g,'').replace(/(.)\1+/g,'$1');
+}
+
+/* 2. सूची बनाना — हर व्यक्ति के नीचे उसकी संतान */
+function build(){
+  const byId = {}; MEMBERS.forEach(m => byId[m.id] = m);
+  KIDS = {};
+  MEMBERS.forEach(m => { const p = m.parentId && byId[m.parentId] ? m.parentId : ''; (KIDS[p] ||= []).push(m); });
+  const order = a => a.sort((x, y) => (parseInt(x.birthYear) || 9999) - (parseInt(y.birthYear) || 9999));
+  const one = (m, g) => {
+    const kids = order(KIDS[m.id] || []), fem = m.gender === 'महिला';
+    const meta = [m.spouse ? (fem ? 'पति: ' : 'पत्नी: ') + m.spouse : '', m.birthYear ? 'जन्म ' + m.birthYear : '', m.village || '']
+      .filter(Boolean).join(' · ');
+    return `<li class="item" data-id="${esc(m.id)}">
+      <button type="button" class="row ${fem ? 'f' : ''} ${kids.length ? '' : 'leaf'}" ${kids.length ? `aria-expanded="false" aria-controls="k-${esc(m.id)}"` : 'tabindex="-1"'}>
+        <span class="arrow">${kids.length ? '▸' : '•'}</span>
+        <span class="who"><span class="gen">पीढ़ी ${g}</span> <span class="nm">${esc(m.name)}</span>${m.status === 'दिवंगत' ? '<span class="dead">दिवंगत</span>' : ''}
+          ${meta ? `<span class="meta">${esc(meta)}</span>` : ''}</span>
+        ${kids.length ? `<span class="count">${kids.length} संतान</span>` : ''}
+      </button>
+      ${kids.length ? `<div class="kids" id="k-${esc(m.id)}"><ul class="lvl">${kids.map(k => one(k, g + 1)).join('')}</ul></div>` : ''}
+    </li>`;
+  };
+  const roots = order(KIDS[''] || []);
+  document.getElementById('list').innerHTML = roots.length
+    ? `<ul class="lvl">${roots.map(r => one(r, 1)).join('')}</ul>`
+    : '<p class="msg">अभी कोई सदस्य दर्ज नहीं है।</p>';
+  // शुरुआत में सबसे पुराने पूर्वज खुले रहें
+  document.querySelectorAll('#list > ul > .item').forEach(li => setOpen(li, true));
+  document.getElementById('info').textContent = 'कुल ' + MEMBERS.length + ' सदस्य';
+}
+
+/* 3. खोलना / बंद करना */
+function setOpen(li, open){
+  const btn = li.querySelector(':scope > .row');
+  if (!btn || btn.classList.contains('leaf')) return;
+  li.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', open);
+  btn.querySelector('.arrow').textContent = open ? '▾' : '▸';
+}
+document.getElementById('list').addEventListener('click', e => {
+  const btn = e.target.closest('.row');
+  if (btn && !btn.classList.contains('leaf')) { const li = btn.parentElement; setOpen(li, !li.classList.contains('open')); }
+});
+
+/* 4. सब खोलें / सब बंद करें */
+const toggleAll = document.getElementById('toggleAll');
+toggleAll.addEventListener('click', () => {
+  const open = toggleAll.textContent === 'सब खोलें';
+  document.querySelectorAll('#list .item').forEach(li => setOpen(li, open));
+  toggleAll.textContent = open ? 'सब बंद करें' : 'सब खोलें';
+});
+
+/* 5. खोज — मिला हुआ नाम दिखाने के लिए ऊपर की शाखाएँ खोलना */
+let t;
+document.getElementById('q').addEventListener('input', () => { clearTimeout(t); t = setTimeout(search, 250); });
+function search(){
+  const q = document.getElementById('q').value.trim(), info = document.getElementById('info');
+  document.querySelectorAll('.row.hit').forEach(r => r.classList.remove('hit'));
+  if (!q) { info.textContent = 'कुल ' + MEMBERS.length + ' सदस्य'; return; }
+  const k = key(q), hits = MEMBERS.filter(m => m.name.includes(q) || (k && key(m.name).includes(k)));
+  hits.forEach(m => {
+    const li = document.querySelector(`.item[data-id="${CSS.escape(m.id)}"]`); if (!li) return;
+    li.querySelector(':scope > .row').classList.add('hit');
+    let p = li.parentElement.closest('.item'); while (p) { setOpen(p, true); p = p.parentElement.closest('.item'); }
+  });
+  info.textContent = hits.length ? hits.length + ' नाम मिले' : 'कोई नाम नहीं मिला';
+  const first = document.querySelector('.row.hit'); if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* 6. Google Sheet से डेटा लाना */
+fetch(SCRIPT_URL + '?action=list')
+  .then(r => r.json())
+  .then(d => { MEMBERS = (d && d.members) || []; build(); })
+  .catch(() => { document.getElementById('list').innerHTML = '<p class="msg">सूची लोड नहीं हो सकी। इंटरनेट जाँचकर पेज रीफ्रेश करें।</p>'; });
+</script>
+</body>
+</html>
