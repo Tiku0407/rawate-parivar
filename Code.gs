@@ -21,10 +21,10 @@ const CFG = {
 
 // Members शीट के कॉलम (क्रम न बदलें)
 const F = ['id', 'name', 'key', 'gender', 'parentId', 'parentName', 'spouse', 'birthYear', 'village',
-           'status', 'mobile', 'notes', 'mergeInto', 'count', 'sources', 'created', 'updated'];
+           'status', 'mobile', 'notes', 'mergeInto', 'count', 'sources', 'created', 'updated', 'order'];
 const COLS = ['ID', 'नाम', 'मिलान-कुंजी', 'लिंग', 'पिता_ID', 'पिता का नाम', 'पति/पत्नी', 'जन्म वर्ष', 'गाँव',
               'स्थिति', 'मोबाइल', 'टिप्पणी', 'मर्ज_ID (इसमें मिलाएँ)', 'कितनी बार दर्ज', 'जानकारी देने वाले',
-              'पहली बार', 'अंतिम अपडेट'];
+              'पहली बार', 'अंतिम अपडेट', 'जन्म क्रम (1 = सबसे बड़ा)'];
 const LOG_COLS = ['समय', 'भरने वाले', 'मोबाइल', 'मुख्य व्यक्ति ID', 'नए जुड़े', 'पहले से मिले', 'टिप्पणी', 'पूरा डेटा'];
 const DUP_COLS = ['ID-1', 'नाम-1', 'पिता-1', 'ID-2', 'नाम-2', 'पिता-2', 'कारण'];
 
@@ -57,7 +57,7 @@ function apiList() {
   const out = members.filter(m => !m.mergeInto).map(m => ({
     id: m.id, name: m.name, key: m.key, gender: m.gender,
     parentId: m.parentId ? idx.canon(m.parentId) : '',
-    spouse: m.spouse, birthYear: m.birthYear, village: m.village, status: m.status, count: m.count
+    spouse: m.spouse, birthYear: m.birthYear, village: m.village, status: m.status, count: m.count, order: m.order
   }));
   return { ok: true, members: out };
 }
@@ -469,7 +469,7 @@ function applyMerges_(members) {
     if (!keep || keep.id === dup.id) { msgs.push(dup.id + ': मर्ज_ID गलत है'); dup.mergeInto = ''; return; }
     if (idx.isAncestor(dup.id, keep.id)) { msgs.push(dup.id + ': अपने ही वंशज में नहीं मिलाया जा सकता'); dup.mergeInto = ''; return; }
     dup.mergeInto = keep.id;
-    ['gender', 'spouse', 'birthYear', 'village', 'mobile', 'notes', 'status'].forEach(f => { if (!keep[f] && dup[f]) keep[f] = dup[f]; });
+    ['gender', 'spouse', 'birthYear', 'village', 'mobile', 'notes', 'status', 'order'].forEach(f => { if (!keep[f] && dup[f]) keep[f] = dup[f]; });
     if (dup.status === 'दिवंगत') keep.status = 'दिवंगत';
     if (!keep.parentId && dup.parentId && !idx.isAncestor(keep.id, dup.parentId)) { keep.parentId = dup.parentId; keep.parentName = dup.parentName; }
     keep.count = (Number(keep.count) || 1) + (Number(dup.count) || 0);

@@ -496,7 +496,13 @@ function renderTree(){
   if (!MEMBERS.length) { box.innerHTML = '<p class="sub">अभी कोई सदस्य दर्ज नहीं है।</p>'; return; }
   const kids = {};
   MEMBERS.forEach(m => { const p = m.parentId && BY_ID[m.parentId] ? m.parentId : ''; (kids[p] ||= []).push(m); });
-  const sort = a => a.sort((x, y) => (parseInt(x.birthYear) || 9999) - (parseInt(y.birthYear) || 9999) || x.name.localeCompare(y.name, 'hi'));
+  const sort = a => a.sort((x, y) => {
+    // बड़े पहले: "जन्म क्रम" (Sheet में) सबसे पहले, फिर जन्म वर्ष; जिनकी जानकारी नहीं, वे अंत में
+    const ox = parseInt(x.order) || 0, oy = parseInt(y.order) || 0, bx = parseInt(x.birthYear) || 0, by = parseInt(y.birthYear) || 0;
+    if (ox && oy) return ox - oy;
+    if (bx && by) return bx - by;
+    return ((ox || bx) ? 0 : 1) - ((oy || by) ? 0 : 1);
+  });
   let maxGen = 0;
   const desc = {};
   const countDesc = id => desc[id] ??= (kids[id] || []).reduce((s, c) => s + 1 + countDesc(c.id), 0);

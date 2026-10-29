@@ -84,7 +84,13 @@ function build(){
   const byId = {}; MEMBERS.forEach(m => byId[m.id] = m);
   KIDS = {};
   MEMBERS.forEach(m => { const p = m.parentId && byId[m.parentId] ? m.parentId : ''; (KIDS[p] ||= []).push(m); });
-  const order = a => a.sort((x, y) => (parseInt(x.birthYear) || 9999) - (parseInt(y.birthYear) || 9999));
+  const order = a => a.sort((x, y) => {
+    // बड़े पहले: "जन्म क्रम" (Sheet में) सबसे पहले, फिर जन्म वर्ष; जिनकी जानकारी नहीं, वे अंत में
+    const ox = parseInt(x.order) || 0, oy = parseInt(y.order) || 0, bx = parseInt(x.birthYear) || 0, by = parseInt(y.birthYear) || 0;
+    if (ox && oy) return ox - oy;
+    if (bx && by) return bx - by;
+    return ((ox || bx) ? 0 : 1) - ((oy || by) ? 0 : 1);
+  });
   const one = (m, g) => {
     const kids = order(KIDS[m.id] || []), fem = m.gender === 'महिला';
     const meta = [m.spouse ? (fem ? 'पति: ' : 'पत्नी: ') + m.spouse : '', m.birthYear ? 'जन्म ' + m.birthYear : '', m.village || '']
